@@ -103,7 +103,7 @@ register模块是整个代码的核心，所有的模型、训练器、优化器
 安装环境:
 > conda create -n clip-hash python=3.8
 >
-> source clip-hash
+> source activate clip-hash
 >
 > pip install -r requirements.txt
 
