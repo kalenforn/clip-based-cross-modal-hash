@@ -102,7 +102,7 @@ It consists of:
 Before training:
 > conda create -n clip-hash python=3.8
 >
-> source clip-hash
+> source activate clip-hash
 >
 > pip install -r requirements.txt
 
