@@ -103,9 +103,11 @@ register模块是整个代码的核心，所有的模型、训练器、优化器
 安装环境:
 > conda create -n clip-hash python=3.8
 >
-> source activate clip-hash
+> source clip-hash
 >
 > pip install -r requirements.txt
+
+下载ViT-B-32预训练模型，下载链接在[CLIP/clip/clip.py](https://github.com/openai/CLIP/blob/main/clip/clip.py)的第30行中找
 
 单卡训练
 > python main.py --config-file configs/DCMHT/config.yaml --save-dir result/DCMHT/coco/16

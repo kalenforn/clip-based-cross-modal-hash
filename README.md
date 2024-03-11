@@ -99,12 +99,16 @@ It consists of:
 
 ## Training step
 
+
 Before training:
-> conda create -n clip-hash python=3.8
->
-> source activate clip-hash
->
-> pip install -r requirements.txt
+- 1. Creating environment:
+    > conda create -n clip-hash python=3.8
+    >
+    > source clip-hash
+    >
+    > pip install -r requirements.txt
+
+- 2. Downloading CLIP pretrained model to this dir. we adopt the ViT-B-32 pretrained model, the download link is in the 30 lines of [CLIP/clip/clip.py](https://github.com/openai/CLIP/blob/main/clip/clip.py).
 
 Training on a single GPU.
 > python main.py --config-file configs/DCMHT/config.yaml --save-dir result/DCMHT/coco/16
