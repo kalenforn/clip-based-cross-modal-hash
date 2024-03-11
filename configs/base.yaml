@@ -1,0 +1,64 @@
+model:
+  arch: Baseline
+  model_type: base
+  clip_path: ./ViT-B-32.pt
+
+  quan_alpha: 0.001
+
+  ###### >>>>>>>> SET POINTS <<<<<<<<<
+  # for set points methods
+  dropout: 0.3
+  # softmax, tanh
+  hash_func: tanh
+
+  ###### >>>>>>>> SET POINTS <<<<<<<<<
+
+optimizer:
+  arch: BertAdam
+
+  lr: 0.001
+  clip_lr: 0.00001
+  warmup_proportion: 0.1
+  schedule: warmup_cosine
+  b1: 0.9
+  b2: 0.98
+  e: 0.000001
+  max_grad_norm: 1.0
+  weight_decay: 0.2
+
+dataset:
+  arch: transformer_dataset
+  tokenizer_arch: clip_tokenizer
+
+  path: ./data/transformer
+  # name: mirflickr
+  name: coco
+  txt_file: caption.mat
+  img_file: index.mat
+  label_file: label.mat
+
+  max_word: 32
+  image_resolution: 224
+
+run:
+  arch: BaselineTrainer
+
+  save_dir: ./result/DCMHT/mir/16
+
+  output_dim: 16
+
+  device: 0
+  batch_size: 100
+  num_workers: 4
+  pin_memory: True
+  shuffle: True
+
+  is_train: True
+  train_num: 10000
+  query_num: 5000
+  epochs: 100
+  display_step: 20
+
+  # top_k: 5000
+
+

@@ -1,0 +1,73 @@
+model:
+  arch: MITH
+  model_type: base
+  clip_path: ./ViT-B-32.pt
+
+  ###### >>>>>>>> SET POINTS <<<<<<<<<
+  # for set points methods
+  dropout: 0
+  # softmax, tanh
+  hash_func: tanh
+  hyper_tokens_intra: 1.0
+  hyper_distill: 1.0
+  hyper_info_nce: 50.0
+  hyper_cls_inter: 10.0
+  hyper_quan: 8.0
+  hyper_alpha: 0.01
+  hyper_lambda: 0.99
+  transformer_layers: 2
+  activation: "gelu"
+  top_k_label: 8
+  res_mlp_layers: 2
+
+  ###### >>>>>>>> SET POINTS <<<<<<<<<
+
+optimizer:
+  arch: BertAdam
+
+  lr: 0.001
+  clip_lr: 0.000002
+  warmup_proportion: 0.05
+  schedule: warmup_cosine
+  b1: 0.9
+  b2: 0.98
+  e: 0.000001
+  max_grad_norm: 1.0
+  weight_decay: 0.01
+
+dataset:
+  arch: transformer_dataset
+  tokenizer_arch: clip_tokenizer
+
+  path: ./data/transformer
+  # name: mirflickr
+  name: coco
+  txt_file: caption.mat
+  img_file: index.mat
+  label_file: label.mat
+
+  max_word: 32
+  image_resolution: 224
+
+run:
+  arch: MITHTrainer
+
+  save_dir: ./result/DCMHT/mir/16
+
+  output_dim: 16
+
+  device: 0
+  batch_size: 100
+  num_workers: 4
+  pin_memory: True
+  shuffle: True
+
+  is_train: True
+  train_num: 10000
+  query_num: 5000
+  epochs: 30
+  display_step: 20
+
+  # top_k: 5000
+
+
