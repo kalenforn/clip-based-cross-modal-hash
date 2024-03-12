@@ -127,3 +127,7 @@ Thanks for the Key Laboratory of Knowledge Engineering with Big Dat in Hefei Uni
 
 ## In the End
 Thanks to the authors who have contributed code to github in the field of cross-modal hashing. I may study other content in the future. This project serves as a final summary and gives back to the open source community. If any author needs to merge projects, please contact ganlantee@gmail.com
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=kalenforn/clip-based-cross-modal-hash&type=Date)](https://star-history.com/#kalenforn/clip-based-cross-modal-hash&Date)
