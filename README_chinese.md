@@ -5,7 +5,7 @@
 - MITH, _MM23_, [paper](https://dl.acm.org/doi/10.1145/3581783.3612411)
 - DSPH, _TCSVT23_, [paper](https://ieeexplore.ieee.org/document/10149001)
 - DNPH, _TOMM24_, [paper](https://dl.acm.org/doi/10.1145/3643639)
-- TwDH, __TMM__, [paper] 即将呈现
+- TwDH, _TMM_, [paper] 即将呈现
 
 **最新消息** 
 - TwDH刚刚于2024/03/21被TMM接收，详情请查看 [Go to](./runners/TwDH/README.md).

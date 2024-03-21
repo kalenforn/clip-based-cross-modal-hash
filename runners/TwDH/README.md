@@ -10,6 +10,20 @@ In this work, we propose a novel two-step discrete hashing, which first extracts
 ## Results
 ![result](./data/result.png)
 
+## Intorduction for the Transform matrix
+The Transform matrix T is generagted by a simple model, which is shown in "transform_matrix_generation" floder. We provide this matrix in this project (PROJECT_ROOT/data/transformer/TwDH) while you can train a model to generate this parameter. The training step is:
+
+> cd ./transform_matrix_generation
+>
+> ln -s ../../../models/common/optimizer.py .
+>
+> ln -s ../../../dataset .
+>
+> python train.py --dataset flickr25k --save-dir ./data/flickr25k/ --batch-size 200 --long-dim 512 --output-dim 16 --index-file ../../../data/transformer/flickr/index.mat --caption-file ../../../data/transformer/flickr/caption.mat --label-file ../../../data/transformer/flickr/label.mat --post-lr 0.1 --long-center-path ../../../data/transformer/TwDH/coco/long/512.pkl --short-center-path ../../../data/transformer/TwDH/coco/short/16.pkl
+
+The hash center in this part is the same as [CSQ](https://github.com/yuanli2333/Hadamard-Matrix-for-hashing), this center is also provided in PROJECT_ROOT/data/transformer/TwDH.
+
+
 ## Training
 >cd ../../
 >
