@@ -1,0 +1,61 @@
+model:
+  arch: TwDH
+  clip_path: ./ViT-B-32.pt
+  long_dim: 512
+  long_center: ./data/transformer/TwDH/coco/long
+  short_center: ./data/transformer/TwDH/coco/short
+  trans_matrix: ./data/transformer/TwDH/coco/trans
+  quan_alpha: 0.5
+  low_rate: 0
+
+  hash_func: softmax
+
+optimizer:
+  arch: BertAdam
+
+  lr: 0.001
+  clip_lr: 0.00001
+  warmup_proportion: 0.1
+  schedule: warmup_cosine
+  b1: 0.9
+  b2: 0.98
+  e: 0.000001
+  max_grad_norm: 1.0
+  weight_decay: 0.2
+
+dataset:
+  arch: transformer_dataset
+  tokenizer_arch: clip_tokenizer
+
+  path: ./data/transformer
+  name: coco
+  txt_file: caption.mat
+  img_file: index.mat
+  label_file: label.mat
+
+  max_word: 32
+  image_resolution: 224
+
+run:
+  arch: TwDHTrainer
+
+  save_dir: ./result/projection/
+
+  output_dim: 16
+
+  device: 0
+  batch_size: 128
+  num_workers: 4
+  pin_memory: True
+  shuffle: True
+
+  is_train: True
+  train_num: 10000
+  query_num: 5000
+  epochs: 100
+  display_step: 20
+
+  # TwDH evulate the MAP@5000
+  top_k: 5000
+
+

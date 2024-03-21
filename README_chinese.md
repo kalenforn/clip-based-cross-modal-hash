@@ -5,6 +5,10 @@
 - MITH, _MM23_, [paper](https://dl.acm.org/doi/10.1145/3581783.3612411)
 - DSPH, _TCSVT23_, [paper](https://ieeexplore.ieee.org/document/10149001)
 - DNPH, _TOMM24_, [paper](https://dl.acm.org/doi/10.1145/3643639)
+- TwDH, __TMM__, [paper] 即将呈现
+
+**最新消息** 
+- TwDH刚刚于2024/03/21被TMM接收，详情请查看 [Go to](./runners/TwDH/README.md).
 
 感谢这些工作的作者提供公开的代码，本项目基于DCMHT代码进行整体重构，并结合其所有衍生方法。本项目相较于DCMHT，具有更好的拓展性，更加便于研究者构建属于自己的跨模态哈希方法。
 项目主要代码结构为
@@ -125,6 +129,10 @@ register模块是整个代码的核心，所有的模型、训练器、优化器
 - [DNPH](https://github.com/QinLab-WFU/OUR-DNPH)
 
 特别鸣谢合肥工业大学媒体计算实验室(数据知识工程重点实验室)对本人的支持！
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=kalenforn/clip-based-cross-modal-hash&type=Date)](https://star-history.com/#kalenforn/clip-based-cross-modal-hash&Date)
 
 ## 写最后
 感谢cross-modal hashing领域在github贡献过代码的作者，本人后续可能会研究其他内容，此项目作为最终总结，并回馈与开源社区。如有作者需要合并项目请联系邮箱 ganlantee@gmail.com

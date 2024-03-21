@@ -1,4 +1,3 @@
 # TwDH
 
-Code will be released soon!
-
+Please moving to [here](../../runners/TwDH/README.md)

@@ -5,6 +5,10 @@ This is a library for cross-modal hashing method relied on CLIP model. We implem
 - MITH, _MM23_, [paper](https://dl.acm.org/doi/10.1145/3581783.3612411)
 - DSPH, _TCSVT23_, [paper](https://ieeexplore.ieee.org/document/10149001)
 - DNPH, _TOMM24_, [paper](https://dl.acm.org/doi/10.1145/3643639)
+- TwDH, __TMM__, [paper] will update soon!. 
+
+**News:** 
+- TwDH just has been accepted in 2024/03/21 by TMM. [Go to](./runners/TwDH/README.md) details.
 
 Thanks for these authors. We re-construct their code with a common structure for the feature research. Compared with DCMHT, this project is more flexible. It consists of the following parts:
 
@@ -124,6 +128,10 @@ Training on multiple GPUs with a distribution method (**Testing**).
 - [DNPH](https://github.com/QinLab-WFU/OUR-DNPH)
 
 Thanks for the Key Laboratory of Knowledge Engineering with Big Dat in Hefei University of Technology!
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=kalenforn/clip-based-cross-modal-hash&type=Date)](https://star-history.com/#kalenforn/clip-based-cross-modal-hash&Date)
 
 ## In the End
 Thanks to the authors who have contributed code to github in the field of cross-modal hashing. I may study other content in the future. This project serves as a final summary and gives back to the open source community. If any author needs to merge projects, please contact ganlantee@gmail.com
