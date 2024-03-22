@@ -8,7 +8,7 @@ This is a library for cross-modal hashing method relied on CLIP model. We implem
 - TwDH, _TMM_, [paper] will update soon!. 
 
 **News:** 
-- TwDH just has been accepted in 2024/03/21 by TMM. [Go to](./runners/TwDH/README.md) details.
+- TwDH (Two-Step Discrete Hashing for Cross-Modal Retrieval) just has been accepted in 2024/03/21 by TMM. [Go to](./runners/TwDH/README.md) details.
 
 Thanks for these authors. We re-construct their code with a common structure for the feature research. Compared with DCMHT, this project is more flexible. It consists of the following parts:
 
