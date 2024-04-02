@@ -7,7 +7,7 @@ This is a library for cross-modal hashing method relied on CLIP model. We implem
 - MITH, _MM23_, [paper](https://dl.acm.org/doi/10.1145/3581783.3612411)
 - DSPH, _TCSVT23_, [paper](https://ieeexplore.ieee.org/document/10149001)
 - DNPH, _TOMM24_, [paper](https://dl.acm.org/doi/10.1145/3643639)
-- TwDH, _TMM_, [paper](https://ieeexplore.ieee.org/document/10487033) 
+- TwDH, _TMM24_, [paper](https://ieeexplore.ieee.org/document/10487033) 
 
 **News:** 
 - Our TwDH paper (Two-Step Discrete Hashing for Cross-Modal Retrieval) has been accepted in 2024/03/21 by TMM. [code](./runners/TwDH/README.md) for details, [paper](https://ieeexplore.ieee.org/document/10487033).
