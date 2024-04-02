@@ -34,10 +34,11 @@ The hash center in this part is the same as [CSQ](https://github.com/yuanli2333/
 > python main.py --config-file configs/TwDH/config.yaml--save-dir result/TwDH/coco/16
 
 ## Citation
-@ARTICLE{10487033,
+
+```@ARTICLE{10487033,
   author={Tu, Junfeng and Liu, Xueliang and Hao, Yanbin and Hong, Richang and Wang, Meng},
   journal={IEEE Transactions on Multimedia}, 
   title={Two-Step Discrete Hashing for Cross-Modal Retrieval}, 
   year={2024},
   pages={1-12},
-  doi={10.1109/TMM.2024.3381828}}
+  doi={10.1109/TMM.2024.3381828}}```
