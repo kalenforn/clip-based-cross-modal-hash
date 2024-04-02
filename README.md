@@ -1,5 +1,7 @@
 # CLIP-based Cross-Modal Hashing
 
+[中文介绍](./README_chinese.md)
+
 This is a library for cross-modal hashing method relied on CLIP model. We implement the follow methods:
 - DCMHT, _MM22_, [paper](https://dl.acm.org/doi/abs/10.1145/3503161.3548187)
 - MITH, _MM23_, [paper](https://dl.acm.org/doi/10.1145/3581783.3612411)
