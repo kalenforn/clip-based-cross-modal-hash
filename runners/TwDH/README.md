@@ -15,7 +15,7 @@ In this work, we propose a novel two-step discrete hashing, which first extracts
 ![result](./data/result.png)
 
 ## Intorduction for the Transform matrix
-The Transform matrix T is generagted by a simple model, which is shown in "transform_matrix_generation" floder. We provide this matrix in this project (PROJECT_ROOT/data/transformer/TwDH) while you can train a model to generate this parameter. The training step is:
+The Transform matrix T is generagted by a simple model, which is shown in "transform_matrix_generation" floder. We provide this matrix in project (PROJECT_ROOT/data/transformer/TwDH) while you can train a model to generate this parameter. The training step is:
 
 > cd ./transform_matrix_generation
 >
