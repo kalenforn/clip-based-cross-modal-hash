@@ -5,10 +5,10 @@
 - MITH, _MM23_, [paper](https://dl.acm.org/doi/10.1145/3581783.3612411)
 - DSPH, _TCSVT23_, [paper](https://ieeexplore.ieee.org/document/10149001)
 - DNPH, _TOMM24_, [paper](https://dl.acm.org/doi/10.1145/3643639)
-- TwDH, _TMM_, [paper] 即将呈现
+- TwDH, _TMM_, [paper](https://ieeexplore.ieee.org/document/10487033) 
 
 **最新消息** 
-- TwDH刚刚于2024/03/21被TMM接收，详情请查看 [Go to](./runners/TwDH/README.md).
+- TwDH于2024/03/21被TMM接收，详情请查看 [代码](./runners/TwDH/README.md)，[paper](https://ieeexplore.ieee.org/document/10487033) .
 
 感谢这些工作的作者提供公开的代码，本项目基于DCMHT代码进行整体重构，并结合其所有衍生方法。本项目相较于DCMHT，具有更好的拓展性，更加便于研究者构建属于自己的跨模态哈希方法。
 项目主要代码结构为
