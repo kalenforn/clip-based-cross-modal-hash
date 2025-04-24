@@ -17,7 +17,7 @@ optimizer:
   arch: BertAdam
 
   lr: 0.001
-  clip_lr: 0.00001
+  backbone_lr: 0.00001
   warmup_proportion: 0.1
   schedule: warmup_cosine
   b1: 0.9

@@ -82,9 +82,9 @@ class Baseline(BaseModel):
                 train_num: int=10000,
                 quan_alpha: float = 0.001):
         super().__init__()
-        assert os.path.isfile(clipPath), f"{clipPath} is not exist!"
+        # assert os.path.isfile(clipPath), f"{clipPath} is not exist!"
         self.cfg = cfg
-        state_dict, self.clip = self.load_clip(clipPath=clipPath, return_patches=False)
+        state_dict, self.backbone = self.load_backbone(clipPath=clipPath, return_patches=False)
         embed_dim = state_dict["text_projection"].shape[1]
         self.hash = HashLayer(inputDim=embed_dim, outputDim=outputDim)
         self.output_dim = outputDim
@@ -92,13 +92,13 @@ class Baseline(BaseModel):
 
     def encode_image(self, image):
 
-        image_embed = self.clip.encode_image(image)
+        image_embed = self.backbone.encode_image(image)
         image_embed = self.hash.encode_img(image_embed)
 
         return image_embed
 
     def encode_text(self, text):
-        text_embed = self.clip.encode_text(text)
+        text_embed = self.backbone.encode_text(text)
         text_embed = self.hash.encode_txt(text_embed)
 
         return text_embed

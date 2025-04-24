@@ -29,10 +29,9 @@ class MITH(BaseModel):
                 top_k_label=8,
                 res_mlp_layers=2):
         super().__init__()
-        assert os.path.isfile(clipPath), f"{clipPath} is not exist!"
+        # assert os.path.isfile(clipPath), f"{clipPath} is not exist!"
         self.cfg = cfg
-        state_dict, self.clip = self.load_clip(clipPath=clipPath, return_patches=True)
-        embed_dim = state_dict["text_projection"].shape[1]
+        embed_dim, self.backbone = self.load_backbone(clipPath=clipPath, return_patches=True)
         self.hash = HashLayer(clip_embed_dim=embed_dim, k_bits=outputDim, dropout=dropout, transformer_layers=transformer_layers, 
                               activation=activation, top_k_label=top_k_label, res_mlp_layers=res_mlp_layers)
         self.output_dim = outputDim
@@ -53,7 +52,7 @@ class MITH(BaseModel):
 
     def encode_image(self, image):
 
-        cls_token, seq_tokens, _ = self.clip.encode_image(image)
+        cls_token, seq_tokens, _ = self.backbone.encode_image(image)
         res_img_cls, img_cls_hash, tokens_hash_i, trans_tokens_i = self.hash.encode_img(img_cls=cls_token, img_tokens=seq_tokens)
 
         return res_img_cls, img_cls_hash, tokens_hash_i, trans_tokens_i
@@ -61,7 +60,7 @@ class MITH(BaseModel):
     def encode_text(self, text, key_padding_mask=None):
         if key_padding_mask.device != text.device:
             key_padding_mask = key_padding_mask.to(text.device)
-        txt_eos, txt_tokens, _, new_key_padding_mask = self.clip.encode_text(text, key_padding_mask=key_padding_mask)
+        txt_eos, txt_tokens, _, new_key_padding_mask = self.backbone.encode_text(text, key_padding_mask=key_padding_mask)
         res_txt_cls, txt_cls_hash, tokens_hash_t, trans_tokens_t = self.hash.encode_txt(txt_eos, txt_tokens, new_key_padding_mask)
 
         return res_txt_cls, txt_cls_hash, tokens_hash_t, trans_tokens_t

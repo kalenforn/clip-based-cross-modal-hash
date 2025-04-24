@@ -105,7 +105,7 @@ class BaseTrainer():
 
         lr_schedu = None
         arch = cfg_optimizer.get("arch", "BertAdam")
-        clip_lr = cfg_optimizer.get("clip_lr", 0.00001)
+        backbone_lr = cfg_optimizer.get("backbone_lr", 0.00001)
         lr = cfg_optimizer.get("lr", 0.001)
         warmup_proportion = cfg_optimizer.get("warmup_proportion", 0.1)
         schedule = cfg_optimizer.get("schedule", "warmup_cosine")
@@ -116,7 +116,7 @@ class BaseTrainer():
         weight_decay = cfg_optimizer.get("weight_decay",  0.2)  
 
         if parameters is None:
-            parameters = [{'params': self.model.clip.parameters(), 'lr': clip_lr},
+            parameters = [{'params': self.model.backbone.parameters(), 'lr': backbone_lr},
                         {'params': self.model.hash.parameters(), 'lr': lr}]
             
         optimizer = registry.get_optimizer_class(arch)(parameters, lr=lr, warmup=warmup_proportion, 

@@ -1,0 +1,95 @@
+model:
+  arch: DIMCH
+  model_type: base
+  clip_path: ./ViT-B-32.pt
+
+  ###### >>>>>>>> SET POINTS <<<<<<<<<
+  # for set points methods
+  setDim: 8
+  dropout: 0.3
+  # softmax, tanh
+  hash_func: tanh
+  # mean, bitwise
+  merge_func: mean
+  
+  # for the tokens' distance computation
+  distance:
+    # “smooth_chamfer”, "chamfer", "max", "avg"
+    mode: smooth_chamfer
+    denominator: 2.0
+    temperature: 16.0
+    temperature_txt_scale: 1.0
+
+  chamfer:
+    margin: 0.2
+    mmd_gamma: 0.5
+    semi_hard_triplet: False
+    max_violation: True
+    mmd_alpha: 1
+    unif_alpha: 0.3
+    token_triplet_margin: 0.3
+  
+  hash_pars:
+    triplet_alpha: 50
+    infonce_alpha: 0.1
+    quan_alpha: 1.0
+    hash_triplet_alpha: 50
+    # for the triplet parameters
+    triplet_margin: 0.3
+
+  ###### >>>>>>>> SET POINTS <<<<<<<<<
+
+optimizer:
+  arch: BertAdam
+
+  lr: 0.001
+  backbone_lr: 0.00001
+  warmup_proportion: 0.1
+  schedule: warmup_cosine
+  b1: 0.9
+  b2: 0.98
+  e: 0.000001
+  max_grad_norm: 1.0
+  weight_decay: 0.2
+
+dataset:
+  arch: transformer_dataset
+  tokenizer_arch: clip_tokenizer
+
+  path: ./data/transformer
+  # name: nuswide
+  name: coco
+  # name: mirflickr
+  txt_file: caption.mat
+  # txt_file: caption.txt
+  img_file: index.mat
+  # img_file: images.npy
+  label_file: label.mat
+
+  max_word: 32
+  image_resolution: 224
+
+run:
+  arch: DIMCHTrainer
+
+  save_dir: ./result/DIMCH/mir/16
+
+  output_dim: 16
+
+  device: 0
+  batch_size: 20
+  num_workers: 4
+  pin_memory: True
+  shuffle: True
+
+  is_train: True
+  train_num: 10000
+  query_num: 5000
+  epochs: 100
+  display_step: 10
+  distributed_addr: localhost
+  distributed_port: 18141
+
+  # top_k: 5000
+
+

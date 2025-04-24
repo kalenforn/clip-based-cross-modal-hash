@@ -27,8 +27,7 @@ class TwDH(BaseModel):
         super(TwDH, self).__init__()
 
         self.cfg = cfg
-        state_dict, self.clip = self.load_clip(clipPath=clipPath, return_patches=False)
-        embed_dim = state_dict["text_projection"].shape[1]
+        embed_dim, self.backbone = self.load_backbone(clipPath=clipPath, return_patches=False)
         self.hash = HashLayer(feature_size=embed_dim, outputDim=long_dim, num_heads=8, batch_first=True, hash_func_=hash_func)
         self.output_dim = long_dim
 
@@ -66,7 +65,7 @@ class TwDH(BaseModel):
     
     def encode_image(self, image):
 
-        image_embed = self.clip.encode_image(image)
+        image_embed = self.backbone.encode_image(image)
         long_hash = self.hash.encode_img(image_embed)
         short_hash = {}
         for k, v in self.trans.items():
@@ -76,7 +75,7 @@ class TwDH(BaseModel):
         return long_hash, short_hash
 
     def encode_text(self, text):
-        text_embed = self.clip.encode_text(text)
+        text_embed = self.backbone.encode_text(text)
         long_hash = self.hash.encode_txt(text_embed)
         short_hash = {}
         for k, v in self.trans.items():

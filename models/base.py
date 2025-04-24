@@ -4,23 +4,32 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from .CLIP.model import build_model
+from .CLIP.model import build_model as build_clip
 
 
 class BaseModel(nn.Module):
 
     DEFAULT_CONFIG_FILE = {"base": "confing/base.yaml"}
     
-    def __init__(self):
+    def __init__(self, cfg=None):
         super().__init__()
+        self.cfg = cfg
     
-    def load_clip(self, clipPath: str, return_patches: bool=False) -> tuple:
-        try:
-            model = torch.jit.load(clipPath, map_location="cpu").eval()
-            state_dict = model.state_dict()
-        except RuntimeError:
-            state_dict = torch.load(clipPath, map_location="cpu")
-        return state_dict, build_model(state_dict, return_patches=return_patches)
+    def load_backbone(self, clipPath: str, return_patches: bool=False) -> tuple:
+
+        if os.path.exists(clipPath):
+            try:
+                model = torch.jit.load(clipPath, map_location="cpu").eval()
+                state_dict = model.state_dict()
+            except RuntimeError:
+                state_dict = torch.load(clipPath, map_location="cpu")
+            if return_patches:
+                return state_dict["text_projection"].shape[1], state_dict["visual.positional_embedding"].shape[0], build_clip(state_dict, return_patches=return_patches)
+            return state_dict["text_projection"].shape[1], build_clip(state_dict, return_patches=return_patches)
+        else:
+            print("pretrained CLIP model doesn't exist!")
+            raise ValueError()
+            
     
     # must be rewrite
     def encode_image(self, x):
