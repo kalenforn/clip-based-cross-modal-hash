@@ -4,11 +4,15 @@
 - DCMHT, _MM22_, [paper](https://dl.acm.org/doi/abs/10.1145/3503161.3548187)
 - MITH, _MM23_, [paper](https://dl.acm.org/doi/10.1145/3581783.3612411)
 - DSPH, _TCSVT23_, [paper](https://ieeexplore.ieee.org/document/10149001)
-- DNPH, _TOMM24_, [paper](https://dl.acm.org/doi/10.1145/3643639)
+- DNPH, _ToMM24_, [paper](https://dl.acm.org/doi/10.1145/3643639)
 - TwDH, _TMM24_, [paper](https://ieeexplore.ieee.org/document/10487033) 
+- DIMCH, _TIP25_, [paper](https://ieeexplore.ieee.org/document/10974482)
+- UMoED, _ToMM25_, [paper](https://dl.acm.org/doi/abs/10.1145/3744567)
 
-**最新消息** 
-- TwDH于2024/03/21被TMM接收，详情请查看 [代码](./runners/TwDH/README.md)，[paper](https://ieeexplore.ieee.org/document/10487033) .
+**🔥最新消息** 
+- TwDH于2024/03/21被TMM收录，详情请查看 [代码](./runners/TwDH/README.md)，[paper](https://ieeexplore.ieee.org/document/10487033)。
+- DIMCH于2025/04/23被TIP收录，详情请查看 [代码](./runners/DIMCH/README.md)，[paper](https://ieeexplore.ieee.org/abstract/document/10974482)。
+- UMoED于2025/06/08被ToMM收录，详情请查看[代码](./runners/UMoED/README.md)，[paper](https://dl.acm.org/doi/abs/10.1145/3744567)。
 
 感谢这些工作的作者提供公开的代码，本项目基于DCMHT代码进行整体重构，并结合其所有衍生方法。本项目相较于DCMHT，具有更好的拓展性，更加便于研究者构建属于自己的跨模态哈希方法。
 项目主要代码结构为

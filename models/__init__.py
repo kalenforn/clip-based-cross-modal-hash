@@ -2,6 +2,7 @@ from .DIMCH import *
 from .DCMHT import *
 from .baseline import *
 from .TwDH import *
+from .UMoED import *
 from .MITH import *
 from .DSPH import *
 from .DNPH import *

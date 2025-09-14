@@ -5,4 +5,5 @@ from .MITH import *
 from .DSPH import *
 from .DNPH import *
 from .TwDH import *
+from .UMoED import *
 from .base import *

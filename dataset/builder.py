@@ -38,7 +38,7 @@ def build_dataloader(captionFile: str,
                 query_num=5000, 
                 train_num=10000, 
                 dataset_cls=None,
-                **kwags):
+                **kwargs):
     assert dataset_cls is not None, "'dataset_cls' must be provided!"
     dataset = registry.get_dataset_class(dataset_cls)
     if captionFile.endswith("mat"):
@@ -89,17 +89,17 @@ def build_dataloader(captionFile: str,
     
     split_indexs, split_captions, split_labels = split_data(captions, indexs, labels, query_num=query_num, train_num=train_num)
 
-    img_train_transform = kwags['img_train_transform'] if 'img_train_transform' in kwags.keys() else None
-    txt_train_transform = kwags['txt_train_transform'] if 'txt_train_transform' in kwags.keys() else None
-    img_valid_transform = kwags['img_valid_transform'] if 'img_valid_transform' in kwags.keys() else None
-    txt_valid_transform = kwags['txt_valid_transform'] if 'txt_valid_transform' in kwags.keys() else None
+    img_train_transform = kwargs['img_train_transform'] if 'img_train_transform' in kwargs.keys() else None
+    txt_train_transform = kwargs['txt_train_transform'] if 'txt_train_transform' in kwargs.keys() else None
+    img_valid_transform = kwargs['img_valid_transform'] if 'img_valid_transform' in kwargs.keys() else None
+    txt_valid_transform = kwargs['txt_valid_transform'] if 'txt_valid_transform' in kwargs.keys() else None
 
     train_data = dataset(captions=split_captions[1], indexs=split_indexs[1], labels=split_labels[1], 
-                         imageResolution=imageResolution, img_transformer=img_train_transform, txt_transformer=txt_train_transform, npy=npy, **kwags)
+                         imageResolution=imageResolution, img_transformer=img_train_transform, txt_transformer=txt_train_transform, npy=npy, **kwargs)
     query_data = dataset(captions=split_captions[0], indexs=split_indexs[0], labels=split_labels[0], 
-                         imageResolution=imageResolution, is_train=False, img_transformer=img_valid_transform, txt_transformer=txt_valid_transform, npy=npy, **kwags)
+                         imageResolution=imageResolution, is_train=False, img_transformer=img_valid_transform, txt_transformer=txt_valid_transform, npy=npy, **kwargs)
     retrieval_data = dataset(captions=split_captions[2], indexs=split_indexs[2], labels=split_labels[2], 
-                             imageResolution=imageResolution, is_train=False, img_transformer=img_valid_transform, txt_transformer=txt_valid_transform, npy=npy, **kwags)
+                             imageResolution=imageResolution, is_train=False, img_transformer=img_valid_transform, txt_transformer=txt_valid_transform, npy=npy, **kwargs)
 
     return train_data, query_data, retrieval_data
     

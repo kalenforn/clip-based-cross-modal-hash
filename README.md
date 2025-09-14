@@ -6,13 +6,15 @@ This is a library for cross-modal hashing method relied on CLIP model. We implem
 - DCMHT, _MM22_, [paper](https://dl.acm.org/doi/abs/10.1145/3503161.3548187)
 - MITH, _MM23_, [paper](https://dl.acm.org/doi/10.1145/3581783.3612411)
 - DSPH, _TCSVT23_, [paper](https://ieeexplore.ieee.org/document/10149001)
-- DNPH, _TOMM24_, [paper](https://dl.acm.org/doi/10.1145/3643639)
+- DNPH, _ToMM24_, [paper](https://dl.acm.org/doi/10.1145/3643639)
 - TwDH, _TMM24_, [paper](https://ieeexplore.ieee.org/document/10487033) 
 - DIMCH, _TIP25_, [paper](https://ieeexplore.ieee.org/document/10974482)
+- UMoED, _ToMM25_, [paper](https://dl.acm.org/doi/abs/10.1145/3744567)
 
 **🔥News:** 
 -  `2024.03.21` Our paper: "Two-Step Discrete Hashing for Cross-Modal Retrieval" has been accepted by TMM. [code](./runners/TwDH/README.md) for details, [paper](https://ieeexplore.ieee.org/document/10487033).
 -  `2025.04.23` Our paper: "Cross-modal Hashing via Diverse Instances Matching" has been accepted by TIP. [code](./runners/DIMCH/README.md) for details, [paper](https://ieeexplore.ieee.org/document/10974482).
+-  `2025.06.08` Our paper: "A Unified Generative Hashing for Cross-Modal Retrieval" has been accepted by ToMM. [code](./runners/UMoED/README.md) for details, [paper](https://dl.acm.org/doi/abs/10.1145/3744567).
 
 Thanks for these authors. We re-construct their code with a common structure for the feature research. Compared with DCMHT, this project is more flexible. It consists of the following parts:
 

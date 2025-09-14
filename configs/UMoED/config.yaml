@@ -1,0 +1,100 @@
+model:
+  arch: UMoED
+  model_type: base
+  clip_path: ./ViT-B-32.pt
+
+  ###### >>>>>>>> SET POINTS <<<<<<<<<
+  # for set points methods
+  setDim: 64
+  dropout: 0.3
+  extreme: True
+  extreme_T: 0.3  #if decoder the best value must be 0.02, margin=0.5
+  triplet: True
+  distance_mode: "cosine"
+
+  MoE: True
+  fusion: True
+  num_experts: 8 
+  slots_per_expert: 8 
+
+    # ce_alpha: 0.001
+  # softmax, tanh, linear_subspace
+  hash_func: linear_subspace
+  # mean, bitwise, concatenate
+  merge_func: concatenate
+  
+  # for the tokens' distance computation
+  decoder_heads: 8 
+  decoder_layers: 6
+  hidden_dim: 512 
+  distance:
+    # “smooth_chamfer”, "chamfer", "max", "avg", "pairwise"
+    mode: pairwise
+    denominator: 2.0
+    temperature: 16.0
+    temperature_txt_scale: 1.0
+
+  chamfer:
+    unif_alpha: 0.8
+    token_triplet_margin: 0.1
+  
+  hash_pars:
+    triplet_alpha: 1
+    triplet_margin: 0.3
+
+  ###### >>>>>>>> SET POINTS <<<<<<<<<
+
+optimizer:
+  arch: BertAdam
+
+  lr: 0.0001
+  backbone_lr: 0.00001
+  warmup_proportion: 0.1
+  schedule: warmup_cosine
+  b1: 0.9
+  b2: 0.98
+  e: 0.000001
+  max_grad_norm: 1.0
+  weight_decay: 0.2
+
+dataset:
+  arch: transformer_dataset
+  tokenizer_arch: clip_tokenizer
+
+  path: ./data/transformer
+    # name: nuswide
+  # name: coco
+  name: mirflickr
+  txt_file: caption.mat
+    # txt_file: caption.txt
+  img_file: index.mat
+  # img_file: images.npy
+  label_file: label.mat
+
+  max_word: 32
+  image_resolution: 224
+
+run:
+  arch: UMoEDTrainer
+
+  save_dir: ./result/DCMHT/mir/16
+
+  output_dim: 64
+
+  device: 0
+  batch_size: 100 
+  num_workers: 4
+  pin_memory: True
+  shuffle: True
+
+  is_train: True
+  train_num: 10000
+  query_num: 5000
+  epochs: 100
+  display_step: 10
+  distributed_addr: localhost
+  distributed_port: 18141
+
+  # top_k: 5000
+
+

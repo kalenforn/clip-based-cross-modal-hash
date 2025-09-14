@@ -1,0 +1,11 @@
+*__pycache__*
+*.pyc
+*result*
+*log*
+*.pth
+*.pt
+*.ipynb_checkpoints
+.DS_Store
+.vscode
+.idea
+

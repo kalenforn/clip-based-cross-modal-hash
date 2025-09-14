@@ -28,7 +28,7 @@ class BaseModel(nn.Module):
             return state_dict["text_projection"].shape[1], build_clip(state_dict, return_patches=return_patches)
         else:
             print("pretrained CLIP model doesn't exist!")
-            raise ValueError()
+            exit(0)
             
     
     # must be rewrite

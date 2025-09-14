@@ -136,8 +136,8 @@ class TwDHTrainer(BaseTrainer):
         self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss.data / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
     
     def generate_hash(self, image, text, key_padding_mask=None):
-        long_image_hash, short_image_hash = self.model.encode_image(image)
-        long_text_hash, short_text_hash = self.model.encode_text(text)
+        long_image_hash, short_image_hash = self.model.encode_image(image) if self.model_ddp is None else self.model_ddp.module.encode_image(image)
+        long_text_hash, short_text_hash = self.model.encode_text(text) if self.model_ddp is None else self.model_ddp.module.encode_text(text)
 
         return long_image_hash, short_image_hash, long_text_hash, short_text_hash
 

@@ -197,8 +197,8 @@ class BaseTrainer():
             self.test()
 
     def generate_hash(self, image, text, key_padding_mask=None):
-        image_hash = self.model.encode_image(image)
-        text_hash = self.model.encode_text(text)
+        image_hash = self.model.encode_image(image) if self.model_ddp is None else self.model_ddp.module.encode_image(image)
+        text_hash = self.model.encode_text(text) if self.model_ddp is None else self.model_ddp.module.encode_text(image)
 
         return image_hash, text_hash
 
