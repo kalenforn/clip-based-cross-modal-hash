@@ -6,6 +6,7 @@ from tqdm import tqdm
 
 from ..base import BaseTrainer
 from common.register import registry
+from torch import distributed as dist
 
 
 @registry.register_runner("UMoEDTrainer")
@@ -174,6 +175,13 @@ class UMoEDTrainer(BaseTrainer):
             img_buffer[index, :] = image_hash.data
             text_buffer[index, :] = text_hash.data
             # fusion_buffer[index, :] = fusion_hash.data
+        
+        if self.distributed:
+            # ensure all ranks have finished writing their local shards
+            dist.barrier()
+            dist.all_reduce(img_buffer, op=dist.ReduceOp.SUM)
+            dist.all_reduce(text_buffer, op=dist.ReduceOp.SUM)
+            dist.all_reduce(fusion_buffer, op=dist.ReduceOp.SUM)
          
         return img_buffer, text_buffer, fusion_buffer
     

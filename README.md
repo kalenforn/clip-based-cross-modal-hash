@@ -122,7 +122,7 @@ Before training:
 Training on a single GPU.
 > python main.py --config-file configs/DCMHT/config.yaml --save-dir result/DCMHT/coco/16
 
-Training on multiple GPUs with a distribution method (**Testing**).
+Training on multiple GPUs with a distribution method (**Supported since 2025/09/15, hash > 5608953f7c04368bbe0499a48837a0d0e7432d2e**).
 > python main.py --config-file configs/DCMHT/config.yaml --save-dir result/DCMHT/coco/16 --device "0,1,2,3" --distribute
 
 ## Acknowledegements

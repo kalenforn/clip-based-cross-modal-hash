@@ -3,6 +3,7 @@ import torch
 from tqdm import tqdm
 from ..base import BaseTrainer
 from common.register import registry
+from torch import distributed as dist
 
 
 @registry.register_runner("TwDHTrainer")
@@ -165,6 +166,15 @@ class TwDHTrainer(BaseTrainer):
                 short_img_buffers[k][index, :] = self.make_hash_code(v.data)
             for k, v in short_text_hash.items():
                 short_txt_buffers[k][index, :] = self.make_hash_code(v.data)
+        
+        # If distributed, aggregate shards across ranks by summing (each index is unique to one rank)
+        if self.distributed:
+            # ensure all ranks have finished writing their local shards
+            dist.barrier()
+            dist.all_reduce(long_img_buffer, op=dist.ReduceOp.SUM)
+            dist.all_reduce(long_txt_buffer, op=dist.ReduceOp.SUM)
+            dist.all_reduce(short_img_buffers, op=dist.ReduceOp.SUM)
+            dist.all_reduce(short_txt_buffers, op=dist.ReduceOp.SUM)
          
         return long_img_buffer, long_txt_buffer, short_img_buffers, short_txt_buffers
     
