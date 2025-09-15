@@ -30,7 +30,7 @@ def main():
     log_dir = os.path.join(args.save_dir, "log")
     os.makedirs(log_dir, exist_ok=True)
 
-    set_seed(args.seed)
+    # set_seed(args.seed)
 
     cfg = read_config(args.config_file, args=args)
     cfg.run.update({"log_dir": log_dir})

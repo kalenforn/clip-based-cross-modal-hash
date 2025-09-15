@@ -11,6 +11,13 @@ from dataset.builder import build_dataloader
 from utils.logger import get_color_logger
 from common.register import registry
 
+import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
+import random
+
+from utils.set_seed import set_seed
+
 # @registry.register_runner("BaseTrainer")
 class BaseTrainer():
 
@@ -32,6 +39,7 @@ class BaseTrainer():
                 # used to open the softmax hash method.
                 **kwags) -> None:
         
+        set_seed(seed=cfg.run.get("seed", 1814))
         self.cfg = cfg
 
         self.is_train = is_train
@@ -75,8 +83,16 @@ class BaseTrainer():
         self.rank = rank
         self.world_size = world_size
         self.logger.info("Initializing distributed")
+        assert self.cfg.run.distributed_addr, "DDP needs the 'distributed_addr' field."
+        assert self.cfg.run.distributed_port, "DDP needs the 'distributed_port' field"
         os.environ['MASTER_ADDR'] = self.cfg.run.distributed_addr
         os.environ['MASTER_PORT'] = str(self.cfg.run.distributed_port)
+        # make sure the current process uses the correct local GPU
+        try:
+            torch.cuda.set_device(rank)
+        except Exception:
+            # fallback: ignore if not running on CUDA or invalid index
+            pass
         dist.init_process_group("nccl", rank=rank, world_size=world_size)
     
     def build_model(self, cfg_model, output_dim=16, **kwags):
@@ -91,7 +107,7 @@ class BaseTrainer():
         self.model.to(self.device)
 
         if self.distributed:
-            self.logger.info("use distribution mode.")
+            self.logger.info("Using distribution mode.")
             self.model = nn.SyncBatchNorm.convert_sync_batchnorm(self.model)
             self.model_ddp = nn.parallel.DistributedDataParallel(self.model, device_ids=[self.device], find_unused_parameters=True)
         else:
@@ -154,15 +170,31 @@ class BaseTrainer():
         self.logger.info(f"retrieval shape: {self.retrieval_labels.shape}")
 
         if self.distributed:
+            # Use DistributedSampler for train/query/retrieval so each rank processes a disjoint shard.
             train_data_sampler = DistributedSampler(
                 dataset=train_data,
                 rank=self.rank,
                 num_replicas=self.world_size,
                 shuffle=True
             )
-            batch_size = batch_size // self.world_size
+            query_data_sampler = DistributedSampler(
+                dataset=query_data,
+                rank=self.rank,
+                num_replicas=self.world_size,
+                shuffle=False
+            )
+            retrieval_data_sampler = DistributedSampler(
+                dataset=retrieval_data,
+                rank=self.rank,
+                num_replicas=self.world_size,
+                shuffle=False
+            )
+            # use per-replica batch size
+            batch_size = max(1, batch_size // self.world_size)
         else:
             train_data_sampler = None
+            query_data_sampler = None
+            retrieval_data_sampler = None
 
         self.train_loader = DataLoader(
                 dataset=train_data,
@@ -170,24 +202,29 @@ class BaseTrainer():
                 num_workers=num_workers,
                 pin_memory=pin_memory,
                 sampler=train_data_sampler, 
-                shuffle=shuffle if train_data_sampler is None else False,
-                drop_last=drop_last
+                shuffle=shuffle if not self.distributed else False,
+                drop_last=drop_last,
+                # worker_init_fn=worker_init_fn if self.distributed else None
             )
         self.query_loader = DataLoader(
                 dataset=query_data,
                 batch_size=batch_size,
                 num_workers=num_workers,
                 pin_memory=pin_memory,
-                shuffle=shuffle,
-                drop_last=False
+                sampler=query_data_sampler,
+                shuffle=False,
+                drop_last=False,
+                # worker_init_fn=worker_init_fn if self.distributed else None
             )
         self.retrieval_loader = DataLoader(
                 dataset=retrieval_data,
                 batch_size=batch_size,
                 num_workers=num_workers,
                 pin_memory=pin_memory,
-                shuffle=shuffle,
-                drop_last=False
+                sampler=retrieval_data_sampler,
+                shuffle=False,
+                drop_last=False,
+                # worker_init_fn=worker_init_fn if self.distributed else None
             )
     
     def run(self):
@@ -198,25 +235,34 @@ class BaseTrainer():
 
     def generate_hash(self, image, text, key_padding_mask=None):
         image_hash = self.model.encode_image(image) if self.model_ddp is None else self.model_ddp.module.encode_image(image)
-        text_hash = self.model.encode_text(text) if self.model_ddp is None else self.model_ddp.module.encode_text(image)
+        text_hash = self.model.encode_text(text) if self.model_ddp is None else self.model_ddp.module.encode_text(text)
 
         return image_hash, text_hash
 
     def get_code(self, data_loader, length: int):
         self.change_state(mode="valid")
-        img_buffer = torch.empty(length, self.output_dim, dtype=torch.float).to(self.device)
-        text_buffer = torch.empty(length, self.output_dim, dtype=torch.float).to(self.device)
+        # initialize buffers to zeros so that sparse per-rank writes can be safely reduced
+        img_buffer = torch.zeros(length, self.output_dim, dtype=torch.float, device=self.device)
+        text_buffer = torch.zeros(length, self.output_dim, dtype=torch.float, device=self.device)
 
-        for image, text, key_padding_mask, label, index in tqdm(data_loader):
-            image = image.to(self.device, non_blocking=True)
-            text = text.to(self.device, non_blocking=True)
-            index = index.numpy()
-            image_hash, text_hash = self.generate_hash(image=image, text=text, key_padding_mask=key_padding_mask)
-            
+        # inference: no grad, fill only indices this rank processes
+        with torch.no_grad():
+            for image, text, key_padding_mask, label, index in tqdm(data_loader):
+                image = image.to(self.device, non_blocking=True)
+                text = text.to(self.device, non_blocking=True)
+                index = index.numpy()
+                image_hash, text_hash = self.generate_hash(image=image, text=text, key_padding_mask=key_padding_mask)
 
-            img_buffer[index, :] = self.make_hash_code(image_hash.data)
-            text_buffer[index, :] = self.make_hash_code(text_hash.data)
-         
+                img_buffer[index, :] = self.make_hash_code(image_hash.data)
+                text_buffer[index, :] = self.make_hash_code(text_hash.data)
+
+        # If distributed, aggregate shards across ranks by summing (each index is unique to one rank)
+        if self.distributed:
+            # ensure all ranks have finished writing their local shards
+            dist.barrier()
+            dist.all_reduce(img_buffer, op=dist.ReduceOp.SUM)
+            dist.all_reduce(text_buffer, op=dist.ReduceOp.SUM)
+
         return img_buffer, text_buffer
     
     def change_state(self, mode):
@@ -243,6 +289,7 @@ class BaseTrainer():
         for epoch in range(self.epochs):
             self.train_epoch(epoch=epoch)
             self.valid(epoch, k=self.top_k)
+
         
         self.logger.info(f">>>>>>> FINISHED >>>>>> Best epoch, I-T: {self.best_epoch_i}, mAP: {self.max_mapi2t}, T-I: {self.best_epoch_t}, mAP: {self.max_mapt2i}")
     

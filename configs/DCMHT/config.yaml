@@ -64,6 +64,9 @@ run:
   epochs: 100
   display_step: 20
 
+  distributed_addr: localhost
+  distributed_port: 12345
+
   # top_k: 5000
 
 

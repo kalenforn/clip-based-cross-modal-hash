@@ -98,7 +98,7 @@ class BaselineTrainer(BaseTrainer):
         self.model.to(self.device)
 
         if self.distributed:
-            self.logger.info("use distribution mode.")
+            self.logger.info("Using distribution mode.")
             self.model = nn.SyncBatchNorm.convert_sync_batchnorm(self.model)
             self.model_ddp = nn.parallel.DistributedDataParallel(self.model, device_ids=[self.device], find_unused_parameters=True)
         else:

@@ -143,7 +143,7 @@ class BertAdam(Optimizer):
                 update = next_m / (next_v.sqrt() + group['e'])
 
                 # Just adding the square of the weights to the loss function is *not*
-                # the correct way of using L2 regularization/weight decay with Adam,
+                # the correct way of Using L2 regularization/weight decay with Adam,
                 # since that will interact with the m and v parameters in strange ways.
                 #
                 # Instead we want to decay the weights in a manner that doesn't interact

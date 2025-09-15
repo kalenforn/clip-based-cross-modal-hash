@@ -29,7 +29,7 @@ class TokenHash(Hash):
             hidden_dim = embedDim
 
         if MoE:
-            print("using moe")
+            print("Using moe")
             decoder_layer = SoftMoEDecoderLayer(d_model=embedDim, nhead=decoder_heads, dropout=dropout, batch_first=True, num_experts=num_experts, slots_per_expert=slots_per_expert)
             self.decoder = SoftMoEDecoder(decoder_layer=decoder_layer, num_layers=decoder_layers)
         else:
@@ -44,9 +44,6 @@ class TokenHash(Hash):
 
         self.decoder_learned_parameters = nn.Parameter(torch.randn(setDim, hidden_dim), requires_grad=True)
         self.classifier = nn.Linear(in_features=hidden_dim, out_features=outputDim)
-        #     self.last_layer.apply(weights_init_kaiming)
-        # self.token_layer.apply(weights_init_kaiming)
-        # self.hash_layer.apply(weights_init_kaiming)
     
     def forward(self, embeds):
         
@@ -54,12 +51,6 @@ class TokenHash(Hash):
         # B,T,L -> B,M,L
         embeds = embeds if self.first_layer is None else F.relu(self.first_layer(embeds))
         decoder_input_embeds = self.decoder_learned_parameters.unsqueeze(0).repeat(embeds.shape[0], 1, 1)
-        # print(embeds.shape)
-        # embeds = self.dimension_transfor(embeds)
-        # print(embeds.shape)
-        # embeds = self.token_layer(embeds)
-        # embeds = F.relu(embeds)
-        # B,M,L -> B,M,K
         embeds = self.decoder(tgt=decoder_input_embeds, memory=embeds, tgt_mask=None, tgt_key_padding_mask=None)
         embeds = self.classifier(embeds)
         
@@ -109,10 +100,6 @@ class HashLayer(nn.Module):
 
         self.hash_func = hash_func
         self.fusion = fusion
-        # self.img_token_hash = TokenHash(inputTokenDim=visual_tokens, outputDim=outputDim, embedDim=img_feature_size, setDim=setDim, decoder_heads=decoder_heads, decoder_layers=decoder_layers, 
-        #                                 dropout=dropout, hash_func=hash_func, merge_func=merge_func, expert_layers=expert_layers, num_experts=num_experts, slots_per_expert=slots_per_expert)
-        # self.txt_token_hash = TokenHash(inputTokenDim=txt_tokens, outputDim=outputDim, embedDim=txt_feature_size, setDim=setDim, decoder_heads=decoder_heads, decoder_layers=decoder_layers, 
-        #                                 dropout=dropout, hash_func=hash_func, merge_func=merge_func, expert_layers=expert_layers, num_experts=num_experts, slots_per_expert=slots_per_expert)
         if self.fusion:
             print("fusion", fusion)
             self.hash_module = TokenHash(inputTokenDim=visual_tokens + txt_tokens, outputDim=outputDim, embedDim=img_feature_size, setDim=setDim, decoder_heads=decoder_heads, decoder_layers=decoder_layers, 
@@ -162,4 +149,4 @@ class HashLayer(nn.Module):
         txt_token_embeds, txt_token_hash = self.encode_txt(txt_inp_embeds)
         # fusion_token_embeds, fusion_token_hash = self.encode_imgAndtxt(img_embeds=img_inp_embeds, txt_embeds=txt_inp_embeds)
 
-        return img_token_embeds, img_token_hash, txt_token_embeds, txt_token_hash, None, None# fusion_token_embeds, fusion_token_hash
+        return img_token_embeds, img_token_hash, txt_token_embeds, txt_token_hash, None, None
