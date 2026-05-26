@@ -147,12 +147,12 @@ class UMoEDTrainer(BaseTrainer):
             img_embeds, hash_img, txt_embeds, hash_text, fusion_embeds, fusion_hash = self.model_ddp(image, text, return_loss=False) if self.model_ddp is not None else self.model(image, text, return_loss=False) 
             loss = self.compute_loss(img_hash=hash_img, txt_hash=hash_text, img_embeds=img_embeds, txt_embeds=txt_embeds, fusion_embeds=fusion_embeds, fusion_hash=fusion_hash, label=label, index=index, epoch=epoch, times=times, global_step=self.global_step)
                     
-            all_loss += loss 
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            all_loss += loss.item()
 
-        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss.data / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
+        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
 
 
     def generate_hash(self, image, text, key_padding_mask=None):
@@ -161,28 +161,29 @@ class UMoEDTrainer(BaseTrainer):
 
     def get_code(self, data_loader, length: int):
         self.change_state(mode="valid")
-        img_buffer = torch.empty(length, self.output_dim, dtype=torch.float).to(self.device)
-        text_buffer = torch.empty(length, self.output_dim, dtype=torch.float).to(self.device)
-        fusion_buffer = torch.empty(length, self.output_dim, dtype=torch.float).to(self.device)
+        img_buffer = torch.zeros(length, self.output_dim, dtype=torch.float, device=self.device)
+        text_buffer = torch.zeros(length, self.output_dim, dtype=torch.float, device=self.device)
+        fusion_buffer = torch.zeros(length, self.output_dim, dtype=torch.float, device=self.device)
 
-        for image, text, key_padding_mask, label, index in tqdm(data_loader):
-            image = image.to(self.device, non_blocking=True)
-            text = text.to(self.device, non_blocking=True)
-            index = index.numpy()
-            image_hash, text_hash, fusion_hash = self.generate_hash(image=image, text=text, key_padding_mask=key_padding_mask)
-            
+        with torch.no_grad():
+            for image, text, key_padding_mask, label, index in tqdm(data_loader):
+                image = image.to(self.device, non_blocking=True)
+                text = text.to(self.device, non_blocking=True)
+                index = index.numpy()
+                image_hash, text_hash, fusion_hash = self.generate_hash(image=image, text=text, key_padding_mask=key_padding_mask)
 
-            img_buffer[index, :] = image_hash.data
-            text_buffer[index, :] = text_hash.data
-            # fusion_buffer[index, :] = fusion_hash.data
-        
+                img_buffer[index, :] = image_hash.data
+                text_buffer[index, :] = text_hash.data
+                if fusion_hash is not None:
+                    fusion_buffer[index, :] = fusion_hash.data
+
         if self.distributed:
             # ensure all ranks have finished writing their local shards
             dist.barrier()
             dist.all_reduce(img_buffer, op=dist.ReduceOp.SUM)
             dist.all_reduce(text_buffer, op=dist.ReduceOp.SUM)
             dist.all_reduce(fusion_buffer, op=dist.ReduceOp.SUM)
-         
+
         return img_buffer, text_buffer, fusion_buffer
     
     def valid(self, epoch, k=None):

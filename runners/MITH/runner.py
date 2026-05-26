@@ -115,12 +115,12 @@ class MITHTrainer(BaseTrainer):
                                      res_txt_cls=res_txt_cls, txt_cls_hash=txt_cls_hash, tokens_hash_t=tokens_hash_t, trans_tokens_t=trans_tokens_t, 
                                      label=label, index=index, epoch=epoch, times=times, global_step=self.global_step)
                     
-            all_loss += loss 
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            all_loss += loss.item()
 
-        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss.data / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
+        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
     
     def generate_hash(self, image, text, key_padding_mask=None):
         _, img_cls_hash, tokens_hash_i, _, \

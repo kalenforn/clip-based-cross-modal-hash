@@ -280,9 +280,11 @@ class BaseTrainer():
             if mode == "train":
                 self.model_ddp.train()
                 self.model.train()
+                self.model.unfreezen()
             else:
                 self.model_ddp.eval()
                 self.model.eval()
+                self.model.freezen()
     
     def train(self):
 

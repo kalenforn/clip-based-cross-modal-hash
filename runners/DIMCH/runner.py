@@ -132,12 +132,12 @@ class DIMCHTrainer(BaseTrainer):
             img_embeds, hash_img, txt_embeds, hash_text = self.model_ddp(image, text, return_loss=False) if self.model_ddp is not None else self.model(image, text, return_loss=False) 
             loss = self.compute_loss(img_hash=hash_img, txt_hash=hash_text, img_embeds=img_embeds, txt_embeds=txt_embeds, label=label, index=index, epoch=epoch, times=times, global_step=self.global_step)
                     
-            all_loss += loss 
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            all_loss += loss.item()
 
-        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss.data / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
+        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
 
     def merge_hash(self, image_embed, text_embed):
         

@@ -129,12 +129,12 @@ class TwDHTrainer(BaseTrainer):
             img_long_hash, img_short_hash, txt_long_hash, txt_short_hash = self.model_ddp(image, text, return_loss=False) if self.model_ddp is not None else self.model(image, text, return_loss=False) 
             loss = self.compute_loss(long_img_hash=img_long_hash, long_txt_hash=txt_long_hash, short_img_hash=img_short_hash, short_txt_hash=txt_short_hash, label=label, index=index, epoch=epoch, times=times, global_step=self.global_step)
                     
-            all_loss += loss 
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            all_loss += loss.item()
 
-        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss.data / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
+        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
     
     def generate_hash(self, image, text, key_padding_mask=None):
         long_image_hash, short_image_hash = self.model.encode_image(image) if self.model_ddp is None else self.model_ddp.module.encode_image(image)
@@ -145,37 +145,39 @@ class TwDHTrainer(BaseTrainer):
     def get_code(self, data_loader, length: int):
         short_dims = self.model.get_short_dims()
         self.change_state(mode="valid")
-        long_img_buffer = torch.empty(length, self.long_dim, dtype=torch.float).to(self.device)
-        long_txt_buffer = torch.empty(length, self.long_dim, dtype=torch.float).to(self.device)
+        long_img_buffer = torch.zeros(length, self.long_dim, dtype=torch.float, device=self.device)
+        long_txt_buffer = torch.zeros(length, self.long_dim, dtype=torch.float, device=self.device)
         short_img_buffers = {}
         short_txt_buffers = {}
         for dim in short_dims:
-            short_img_buffers.update({str(dim): torch.empty(length, dim, dtype=torch.float).to(self.device)})
-            short_txt_buffers.update({str(dim): torch.empty(length, dim, dtype=torch.float).to(self.device)})
+            short_img_buffers[str(dim)] = torch.zeros(length, dim, dtype=torch.float, device=self.device)
+            short_txt_buffers[str(dim)] = torch.zeros(length, dim, dtype=torch.float, device=self.device)
 
-        for image, text, key_padding_mask, label, index in tqdm(data_loader):
-            image = image.to(self.device, non_blocking=True)
-            text = text.to(self.device, non_blocking=True)
-            index = index.numpy()
-            long_image_hash, short_image_hash, long_text_hash, short_text_hash = self.generate_hash(image=image, text=text, key_padding_mask=key_padding_mask)
-            
+        with torch.no_grad():
+            for image, text, key_padding_mask, label, index in tqdm(data_loader):
+                image = image.to(self.device, non_blocking=True)
+                text = text.to(self.device, non_blocking=True)
+                index = index.numpy()
+                long_image_hash, short_image_hash, long_text_hash, short_text_hash = self.generate_hash(image=image, text=text, key_padding_mask=key_padding_mask)
 
-            long_img_buffer[index, :] = self.make_hash_code(long_image_hash.data)
-            long_txt_buffer[index, :] = self.make_hash_code(long_text_hash.data)
-            for k, v in short_image_hash.items():
-                short_img_buffers[k][index, :] = self.make_hash_code(v.data)
-            for k, v in short_text_hash.items():
-                short_txt_buffers[k][index, :] = self.make_hash_code(v.data)
-        
+                long_img_buffer[index, :] = self.make_hash_code(long_image_hash.data)
+                long_txt_buffer[index, :] = self.make_hash_code(long_text_hash.data)
+                for k, v in short_image_hash.items():
+                    short_img_buffers[k][index, :] = self.make_hash_code(v.data)
+                for k, v in short_text_hash.items():
+                    short_txt_buffers[k][index, :] = self.make_hash_code(v.data)
+
         # If distributed, aggregate shards across ranks by summing (each index is unique to one rank)
         if self.distributed:
             # ensure all ranks have finished writing their local shards
             dist.barrier()
             dist.all_reduce(long_img_buffer, op=dist.ReduceOp.SUM)
             dist.all_reduce(long_txt_buffer, op=dist.ReduceOp.SUM)
-            dist.all_reduce(short_img_buffers, op=dist.ReduceOp.SUM)
-            dist.all_reduce(short_txt_buffers, op=dist.ReduceOp.SUM)
-         
+            for k in short_img_buffers:
+                dist.all_reduce(short_img_buffers[k], op=dist.ReduceOp.SUM)
+            for k in short_txt_buffers:
+                dist.all_reduce(short_txt_buffers[k], op=dist.ReduceOp.SUM)
+
         return long_img_buffer, long_txt_buffer, short_img_buffers, short_txt_buffers
     
     def valid(self, epoch, k=None):

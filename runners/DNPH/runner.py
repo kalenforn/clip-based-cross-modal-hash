@@ -126,14 +126,14 @@ class DNPHTrainer(BaseTrainer):
             img_hash, txt_hash, img_pre, txt_pre = self.model_ddp(image, text, return_loss=False) if self.model_ddp is not None else self.model(image, text, return_loss=False) 
             loss = self.compute_loss(img_hash=img_hash, txt_hash=txt_hash, img_pre=img_pre, txt_pre=txt_pre, label=label, index=index, epoch=epoch, times=times, global_step=self.global_step)
                     
-            all_loss += loss 
             self.optimizer.zero_grad()
             self.optimizer_loss.zero_grad()
             loss.backward()
             self.optimizer.step()
             self.optimizer_loss.step()
+            all_loss += loss.item()
 
-        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss.data / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
+        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
     
     def generate_hash(self, image, text, key_padding_mask=None):
         image_hash, _ = self.model.encode_image(image)
