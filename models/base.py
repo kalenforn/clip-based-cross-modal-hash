@@ -55,12 +55,21 @@ class BaseModel(nn.Module):
         raise NotImplementedError()
     
     def freezen(self):
+        # Snapshot the prior requires_grad mask so unfreezen() restores it instead
+        # of blanket-enabling every parameter (which would clobber partial freezes
+        # like freezen_backone()).
+        self._requires_grad_snapshot = {id(p): p.requires_grad for p in self.parameters()}
         for para in self.parameters():
             para.requires_grad = False
-    
+
     def unfreezen(self):
-        for para in self.parameters():
-            para.requires_grad = True
+        snapshot = getattr(self, "_requires_grad_snapshot", None)
+        if snapshot is None:
+            for para in self.parameters():
+                para.requires_grad = True
+        else:
+            for para in self.parameters():
+                para.requires_grad = snapshot.get(id(para), True)
     
     @classmethod
     def default_config_path(cls, model_type):

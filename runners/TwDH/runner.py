@@ -117,7 +117,7 @@ class TwDHTrainer(BaseTrainer):
         self.change_state(mode="train")
 
         self.logger.info(">>>>>> epochs: %d/%d"%(epoch, self.epochs))
-        all_loss = 0
+        all_loss = torch.zeros((), device=self.device)
         times = 0
         for image, text, key_padding_mask, label, index in self.train_loader:
             self.global_step += 1
@@ -132,9 +132,9 @@ class TwDHTrainer(BaseTrainer):
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-            all_loss += loss.item()
+            all_loss += loss.detach()
 
-        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
+        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss.item() / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
     
     def generate_hash(self, image, text, key_padding_mask=None):
         long_image_hash, short_image_hash = self.model.encode_image(image) if self.model_ddp is None else self.model_ddp.module.encode_image(image)
@@ -173,9 +173,9 @@ class TwDHTrainer(BaseTrainer):
             dist.barrier()
             dist.all_reduce(long_img_buffer, op=dist.ReduceOp.SUM)
             dist.all_reduce(long_txt_buffer, op=dist.ReduceOp.SUM)
-            for k in short_img_buffers:
+            for k in sorted(short_img_buffers):
                 dist.all_reduce(short_img_buffers[k], op=dist.ReduceOp.SUM)
-            for k in short_txt_buffers:
+            for k in sorted(short_txt_buffers):
                 dist.all_reduce(short_txt_buffers[k], op=dist.ReduceOp.SUM)
 
         return long_img_buffer, long_txt_buffer, short_img_buffers, short_txt_buffers

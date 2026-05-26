@@ -99,7 +99,7 @@ class MITHTrainer(BaseTrainer):
         self.change_state(mode="train")
 
         self.logger.info(">>>>>> epochs: %d/%d"%(epoch, self.epochs))
-        all_loss = 0
+        all_loss = torch.zeros((), device=self.device)
         times = 0
         for image, text, key_padding_mask, label, index in self.train_loader:
             self.global_step += 1
@@ -118,9 +118,9 @@ class MITHTrainer(BaseTrainer):
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-            all_loss += loss.item()
+            all_loss += loss.detach()
 
-        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
+        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss.item() / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
     
     def generate_hash(self, image, text, key_padding_mask=None):
         _, img_cls_hash, tokens_hash_i, _, \

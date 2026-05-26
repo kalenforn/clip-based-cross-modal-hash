@@ -135,7 +135,7 @@ class UMoEDTrainer(BaseTrainer):
         self.change_state(mode="train")
 
         self.logger.info(">>>>>> epochs: %d/%d"%(epoch, self.epochs))
-        all_loss = 0
+        all_loss = torch.zeros((), device=self.device)
         times = 0
         for image, text, key_padding_mask, label, index in self.train_loader:
             self.global_step += 1
@@ -144,15 +144,15 @@ class UMoEDTrainer(BaseTrainer):
             text = text.to(self.device, non_blocking=True)
             index = index.numpy()
 
-            img_embeds, hash_img, txt_embeds, hash_text, fusion_embeds, fusion_hash = self.model_ddp(image, text, return_loss=False) if self.model_ddp is not None else self.model(image, text, return_loss=False) 
+            img_embeds, hash_img, txt_embeds, hash_text, fusion_embeds, fusion_hash = self.model_ddp(image, text, return_loss=False) if self.model_ddp is not None else self.model(image, text, return_loss=False)
             loss = self.compute_loss(img_hash=hash_img, txt_hash=hash_text, img_embeds=img_embeds, txt_embeds=txt_embeds, fusion_embeds=fusion_embeds, fusion_hash=fusion_hash, label=label, index=index, epoch=epoch, times=times, global_step=self.global_step)
-                    
+
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-            all_loss += loss.item()
+            all_loss += loss.detach()
 
-        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
+        self.logger.info(f">>>>>> [{epoch}/{self.epochs}] loss: {all_loss.item() / (len(self.train_loader))}, lr: {'-'.join([str('%.9f'%itm) for itm in sorted(list(set(self.optimizer.get_lr())))])}")
 
 
     def generate_hash(self, image, text, key_padding_mask=None):
@@ -163,7 +163,9 @@ class UMoEDTrainer(BaseTrainer):
         self.change_state(mode="valid")
         img_buffer = torch.zeros(length, self.output_dim, dtype=torch.float, device=self.device)
         text_buffer = torch.zeros(length, self.output_dim, dtype=torch.float, device=self.device)
-        fusion_buffer = torch.zeros(length, self.output_dim, dtype=torch.float, device=self.device)
+        # fusion_buffer is lazily allocated only if the model actually returns fusion_hash;
+        # the current UMoED forward path returns None (fusion encoder is disabled).
+        fusion_buffer = None
 
         with torch.no_grad():
             for image, text, key_padding_mask, label, index in tqdm(data_loader):
@@ -175,6 +177,8 @@ class UMoEDTrainer(BaseTrainer):
                 img_buffer[index, :] = image_hash.data
                 text_buffer[index, :] = text_hash.data
                 if fusion_hash is not None:
+                    if fusion_buffer is None:
+                        fusion_buffer = torch.zeros(length, fusion_hash.shape[-1], dtype=torch.float, device=self.device)
                     fusion_buffer[index, :] = fusion_hash.data
 
         if self.distributed:
@@ -182,7 +186,11 @@ class UMoEDTrainer(BaseTrainer):
             dist.barrier()
             dist.all_reduce(img_buffer, op=dist.ReduceOp.SUM)
             dist.all_reduce(text_buffer, op=dist.ReduceOp.SUM)
-            dist.all_reduce(fusion_buffer, op=dist.ReduceOp.SUM)
+            if fusion_buffer is not None:
+                dist.all_reduce(fusion_buffer, op=dist.ReduceOp.SUM)
+
+        if fusion_buffer is None:
+            fusion_buffer = torch.zeros(length, self.output_dim, dtype=torch.float, device=self.device)
 
         return img_buffer, text_buffer, fusion_buffer
     

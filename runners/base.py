@@ -344,19 +344,22 @@ class BaseTrainer():
         assert not self.model_state == "", "test step must provide the model file!"
         self.logger.info("Test.")
         self.change_state(mode="valid")
-        save_dir = os.path.join(self.save_dir, "mat_files")
-        os.makedirs(save_dir, exist_ok=True)
+        try:
+            save_dir = os.path.join(self.save_dir, "mat_files")
+            os.makedirs(save_dir, exist_ok=True)
 
-        query_img, query_txt = self.get_code(self.query_loader, self.query_num)
-        retrieval_img, retrieval_txt = self.get_code(self.retrieval_loader, self.retrieval_num)
+            query_img, query_txt = self.get_code(self.query_loader, self.query_num)
+            retrieval_img, retrieval_txt = self.get_code(self.retrieval_loader, self.retrieval_num)
 
-        mAPi2t = self.calc_map_k(query_img, retrieval_txt, self.query_labels, self.retrieval_labels, self.top_k)
-        # print("map map")
-        mAPt2i = self.calc_map_k(query_txt, retrieval_img, self.query_labels, self.retrieval_labels, self.top_k)
-        mAPi2i = self.calc_map_k(query_img, retrieval_img, self.query_labels, self.retrieval_labels, self.top_k)
-        mAPt2t = self.calc_map_k(query_txt, retrieval_txt, self.query_labels, self.retrieval_labels, self.top_k)
-        self.save_mat(query_img, query_txt, self.query_labels, retrieval_img, retrieval_txt, self.retrieval_labels, save_file=os.path.join(save_dir, "test.mat"))
-        self.logger.info(f">>>>>> TEST, MAP(i->t): {mAPi2t}, MAP(t->i): {mAPt2i}, MAP(t->t): {mAPt2t}, MAP(i->i): {mAPi2i}")
+            mAPi2t = self.calc_map_k(query_img, retrieval_txt, self.query_labels, self.retrieval_labels, self.top_k)
+            mAPt2i = self.calc_map_k(query_txt, retrieval_img, self.query_labels, self.retrieval_labels, self.top_k)
+            mAPi2i = self.calc_map_k(query_img, retrieval_img, self.query_labels, self.retrieval_labels, self.top_k)
+            mAPt2t = self.calc_map_k(query_txt, retrieval_txt, self.query_labels, self.retrieval_labels, self.top_k)
+            self.save_mat(query_img, query_txt, self.query_labels, retrieval_img, retrieval_txt, self.retrieval_labels, save_file=os.path.join(save_dir, "test.mat"))
+            self.logger.info(f">>>>>> TEST, MAP(i->t): {mAPi2t}, MAP(t->i): {mAPt2i}, MAP(t->t): {mAPt2t}, MAP(i->i): {mAPi2i}")
+        finally:
+            # Restore requires_grad so the trainer object stays reusable after test().
+            self.change_state(mode="train")
     
     def print_loss_dict(self, loss_dict, bits=16, epoch=0, times=0):
 
